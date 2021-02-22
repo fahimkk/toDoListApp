@@ -2,41 +2,52 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"html/template"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func index(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
-		t, _ := template.ParseFiles("index.html")
-		t.Execute(w, nil)
+func checkErr(err error) {
+	if err != nil {
+		panic(err)
+	}
+} 
+
+func index(response http.ResponseWriter, request *http.Request) {
+	indexTemplate, err := template.ParseFiles("index.html")
+	checkErr(err)
+	if request.Method == "GET" {
+		err = indexTemplate.Execute(response, nil)
+		checkErr(err)
 	} else {
-		r.ParseForm()
-		title := r.Form.Get("title")
+		// else it is POST method
+		request.ParseForm()
+		title := request.Form.Get("title")
 		// r.Form gives a map of values, get gives single value
 		// add title to db if not empty
 		if len(title) !=0 {
-			fmt.Println(title, "To Database")
-			db, _ := sql.Open("mysql", "fahim:12345@tcp(localhost:3306)/to_do_list")
+			db, err := sql.Open("mysql", "fahim:12345@tcp(localhost:3306)/to_do_list")
+			checkErr(err)
 			// INSERT
-			stmt, _ := db.Prepare("INSERT list SET title=?")
+			stmt, err := db.Prepare("INSERT list SET title=?")
+			checkErr(err)
 			res, _ := stmt.Exec(title)
 			id, _ := res.LastInsertId()
 			fmt.Println("ID: ",id,"-",title)
-					t, _ := template.ParseFiles("index.html")
-		t.Execute(w, nil)
-		db.QueryRow("SELECT * FROM list")
+			indexTemplate.Execute(response, nil)
+			stmt, err = db.Prepare("DELETE from list where id=?")
+			checkErr(err)
+			var i int64
+			for i = 0; i < 10; i++ {
+				stmt.Exec(id-i)
+			}
+			// db.QueryRow("SELECT * FROM list")
 		}
 	}
 }
 func main(){
 	http.HandleFunc("/", index)
-	fmt.Println("Server running...")
 	err := http.ListenAndServe(":9000", nil)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
-	}
+	checkErr(err)
 }
