@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <title>TO DO LIST</title>
+</head>
+
+<body id="bg">
+
+   <header>
+       <div class="container" id="header">
+           <h1>TO DO LIST</h1> 
+       </div>
+   </header> 
+   <div id="content-container">
+    <div>
+        <ul id="title-list">
+            {{range .}}
+            <div class="row" id="content-row">
+                <div class="col-9" id="title-col">
+                    <li>
+                        <button class="btn" type="submit" id="status-button" name="status" value="true">
+                            <i class="far fa-circle"></i>
+                        </button>
+                        {{.ID}} {{ .Title }}
+                    </li>
+                </div>
+                <div class="col-3" id="icons-col">
+                    <form  method="POST" id="delete-form">
+                        <button class="btn" type="submit" id="delete-button" name="deleteID" value="{{.ID}}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {{end}}
+        </ul>
+    </div>
+    <form method="POST" id="details-form">
+        <label style="padding-right: 20px;">Title</label>
+        <input placeholder="To Do Item" type="text" name="title" id="title-input">
+        <input type="submit" id="addItem">
+    </form>
+   </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://kit.fontawesome.com/e1342e9a0c.js" crossorigin="anonymous"></script>
+
+   <script>
+    $(document).ready(function(){
+        $("#addItem").click(function(){
+          $("ul").append('<li>' + $("#title-input").val() + '</li>');
+          $("details-form").submit();
+        });
+        $("#delete-button").click(function(){
+           $("delete-form").submit(); 
+        });
+    });
+   </script>
+</body>
+</html>

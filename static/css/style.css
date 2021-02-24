@@ -1,0 +1,61 @@
+#bg{
+    background-color: #dcdcdc;
+}
+#header{
+    text-align: center;
+    background-color: teal;
+}
+#header h1{
+    color: white;
+    font-weight: lighter;
+    padding: 20px;
+}
+#content-container{
+    margin-left: 25%;
+    margin-right: 25%;
+    margin-top: 50px;
+    margin-bottom: 50px;
+    padding-bottom: 20px;
+    padding-top: 20px;
+    text-align: center;
+    border: black 1px solid;
+}
+#title-list{
+    list-style-type: none;
+}
+#content-row{
+    padding:5px;
+}
+#title-col{
+    text-align: left;
+}
+#status-button{
+    display: inline;
+    font-size: 22px;
+    margin-right: 30px;
+}
+
+#icons-col{
+}
+
+
+#delete-form{
+}
+#delete-button{
+    border: none;
+    font-size: 16px;
+}
+#delete-button :hover{
+    color: red;
+}
+#details-form{
+}
+#title-label{
+    padding-right: 20px;
+}
+#title-input{
+
+}
+#addItem{
+
+}

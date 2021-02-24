@@ -34,26 +34,13 @@ func index(response http.ResponseWriter, request *http.Request) {
 	db, err := sql.Open("mysql", "fahim:12345@tcp(localhost:3306)/to_do_list")
 	checkErr(err)
 	// Parse index.html template
-	indexTemplate := template.Must(template.ParseFiles("index.html"))
+	indexTemplate := template.Must(template.ParseFiles("static/index.html"))
 	// if didn't enclose the ParseFiles method inside the Must method, we had to handle error separately
 	// when using template as string, instead of ParseFiles, we can use below code.
 	// templateStr := template.Must(template.New("anyname").Parse(templateSring))
 
 	var title string
 	var id int64
-
-		/*
-	deleteID := request.URL.Query().Get("deleteID")
-	if deleteID != "" {
-		id, err = strconv.ParseInt(request.URL.Query().Get("deleteID"),10,64)
-		checkErr(err)
-		fmt.Println(id)
-		stmt, err := db.Prepare("DELETE list SET id=?")
-		checkErr(err)
-		_, err = stmt.Exec(id)
-		request.URL.Path=""
-	}
-		*/
 
 	// Taking Existing data from database
 	var tasks []task
@@ -118,8 +105,17 @@ func delete(response http.ResponseWriter, request *http.Request) {
 }
 
 func main(){
+	// To add external files
+	/*
+	Added "/assets/" in both here and inside the template style path also, and strip it out.
+	or we have to add "/" instead "/assets/" in Handle   to avoid using http.StripPrefix function,
+	but when we do so it throws a panic error which says that "/" with different handler, it overcome this we have to change "/" to "/index" in oru handleFunc. 
+	*/
+	http.Handle("/assets/", http.StripPrefix("/assets", http.FileServer(http.Dir("./static"))))
+
 	http.HandleFunc("/", index)
 	http.HandleFunc("/delete", delete)
+
 	err := http.ListenAndServe(":9000", nil)
 	checkErr(err)
 }
