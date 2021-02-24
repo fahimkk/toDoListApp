@@ -17,9 +17,19 @@
    <div id="content" style="text-align: center; border: black 1px solid; margin-left: 20%; margin-right: 20%; padding-top: 20px; padding-bottom: 20px;">
     <div>
         <ul>
+            {{range .}}
+            <div>
+                <li>
+                   {{.ID}} {{ .Title }}
+                </li>
+                <form  method="POST" id="delete">
+                    <button type="submit" id="delete-button" name="deleteID" value="{{.ID}}">Delete</button>
+                </form>
+            </div>
+            {{end}}
         </ul>
     </div>
-    <form method="POST">
+    <form method="POST" id="details">
         <label style="padding-right: 20px;">Title</label>
         <input placeholder="To Do Item" type="text" name="title" id="title">
         <input type="submit" id="newItem">
@@ -28,11 +38,15 @@
         <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
    <script>
 
+    $(document).ready(function(){
         $("#newItem").click(function(){
           $("ul").append('<li>' + $("#title").val() + '</li>');
-            $("form").submit();
-          // if return false is not added the page will reload.
+          $("details").submit();
         });
+        $("#delete-button").click(function(){
+           $("delete").submit(); 
+        });
+    });
    </script>
 </body>
 </html>
