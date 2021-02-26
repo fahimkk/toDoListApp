@@ -2,9 +2,13 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
-	"text/template"
+	//"go/printer"
 	"strconv"
+	"text/template"
+
+	//"strconv"
 	// html/template is mainly used for cross site scripting, to escape html syntax
 	"net/http"
 
@@ -16,6 +20,19 @@ func checkErr(err error) {
 		panic(err)
 	}
 } 
+/*
+// tasks - data from the database in an slice form
+type task struct{
+	title string
+	id int64
+}
+func (p *task) Title() string {
+	return p.title
+}
+func (p *task) ID() int64 {
+	return p.id
+}
+*/
 
 // tasks - data from the database in an slice form
 type task struct{
@@ -28,6 +45,8 @@ func (p *task) Title() string {
 func (p *task) ID() int64 {
 	return p.id
 }
+
+var lastInsertedID int64
 
 func index(response http.ResponseWriter, request *http.Request) {
 	// Connect to database
@@ -43,7 +62,7 @@ func index(response http.ResponseWriter, request *http.Request) {
 	var id int64
 
 	// Taking Existing data from database
-	var tasks []task
+	var tasks []task 
 	rows, err := db.Query("SELECT * FROM list")
 	checkErr(err)
 	// var li string
@@ -51,9 +70,7 @@ func index(response http.ResponseWriter, request *http.Request) {
 		err = rows.Scan(&id, &title)
 		checkErr(err)
 		tasks = append(tasks, task{id:id, title: title})
-		//li += fmt.Sprintf(`<li>%v</li>`, title)
 	}
-
 	if request.Method == "GET" {
 		// Pass existing data to the index page
 		err = indexTemplate.Execute(response, tasks)
@@ -61,9 +78,10 @@ func index(response http.ResponseWriter, request *http.Request) {
 	} else {
 		// else it is POST method
 		request.ParseForm()
-
 		// If it insert
 		title = request.Form.Get("title")
+		deleteID := request.Form.Get("deleteID")
+		fmt.Println("d.ID: ",deleteID)
 		// r.Form gives a map of values, get gives single value
 		// add title to db if not empty
 		if len(title) !=0 {
@@ -72,45 +90,30 @@ func index(response http.ResponseWriter, request *http.Request) {
 			checkErr(err)
 			res, _ := stmt.Exec(title)
 			id, _ := res.LastInsertId()
+			b, _ := json.Marshal(id)
+			response.Write(b)
 			fmt.Println("ID: ",id,"-",title)
-			// Add new data to tasks slice 
-			tasks = append(tasks, task{id:id, title: title})
 		}
-
-		// If it delete 
-		deleteID := request.Form.Get("deleteID")
-		if deleteID != "" {
-			id, err = strconv.ParseInt(deleteID,10,64)
-			checkErr(err)
-			stmt, err := db.Prepare("DELETE from list WHERE id=?") 
-			checkErr(err) 
-			_, err = stmt.Exec(id)
-			checkErr(err)
-			for index, item := range tasks{
-				if item.id == id {
-					tasks = append(tasks[:index], tasks[index+1:]...)
-					break
-				}
-			}
-		}
-
-		err = indexTemplate.Execute(response, tasks)
-		checkErr(err)
 	}
 }
-func delete(response http.ResponseWriter, request *http.Request) {
-	request.ParseForm()
-	fmt.Println(request.Form.Get("ID"))
-	fmt.Fprintf(response, "hi")
+
+
+func delete(w http.ResponseWriter, r *http.Request) {
+	// Delete
+	r.ParseForm()
+	deleteID := r.Form.Get("deleteID")
+		if deleteID != "" {
+			id, err := strconv.ParseInt(deleteID,10,64)
+			checkErr(err)
+			fmt.Println(id)
+		}
+		http.Redirect(w, r, "/",http.StatusSeeOther)
+
+	// instead of above code we can also use
+	// json.NewEncoder(w).Encode(lastInsertedID)
 }
 
 func main(){
-	// To add external files
-	/*
-	Added "/assets/" in both here and inside the template style path also, and strip it out.
-	or we have to add "/" instead "/assets/" in Handle   to avoid using http.StripPrefix function,
-	but when we do so it throws a panic error which says that "/" with different handler, it overcome this we have to change "/" to "/index" in oru handleFunc. 
-	*/
 	http.Handle("/assets/", http.StripPrefix("/assets", http.FileServer(http.Dir("./static"))))
 
 	http.HandleFunc("/", index)
