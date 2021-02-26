@@ -12,34 +12,41 @@
 <body id="bg">
 
    <header>
-       <div class="container" id="header">
+       <div class="container-fluid" id="header">
            <h1>TO DO LIST</h1> 
        </div>
    </header> 
-   <div id="content-container">
+   <div id="content-container" class="w-75 mx-auto">
     <div>
         <ul id="title-list">
             {{range .}}
-            <div class="row" id="content-row">
-                <div class="col-9" id="title-col">
-                    <li>
-                        <button class="btn" type="submit" id="status-button" name="status" value="true">
-                            <i class="far fa-circle"></i>
-                        </button>
+            <li>
+                <div class="row me-4 p-1">
+                    <div class="col-8" id="title-col">
                         {{.ID}} {{ .Title }}
-                    </li>
-                </div>
-                <div class="col-3" id="icons-col">
-                    <form  method="POST" id="delete-form">
-                        <button class="btn" type="submit" id="delete-button" name="deleteID" value="{{.ID}}">
+                    </div>
+                    <div class="col-4 btn-group" >
+                        <button class="btn" id="delete-button" name="deleteID" value="{{.ID}}">
                             <i class="fas fa-trash"></i>
                         </button>
-                    </form>
+                        <button class="btn" id="status-button" name="completedID" value="{{.ID}}">
+                            <i class="far fa-check-circle"></i>
+                        </button>
+                        <button class="btn" id="delete-button" name="deleteID" value="{{.ID}}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <hr>
                 </div>
-            </div>
+            </li>
             {{end}}
         </ul>
     </div>
+
+   
+
+
+
     <form method="POST" id="details-form">
         <label style="padding-right: 20px;">Title</label>
         <input placeholder="To Do Item" type="text" name="title" id="title-input">
@@ -52,14 +59,67 @@
 
    <script>
     $(document).ready(function(){
-        $("#addItem").click(function(){
-          $("ul").append('<li>' + $("#title-input").val() + '</li>');
-          $("details-form").submit();
+
+        $("#addItem").click(function(event){
+            event.preventDefault();
+            var title = $("#title-input").val()
+            console.log(title);
+            $.ajax({
+                type: "post",
+                url: "main.go",
+                data: {title: title},
+                dataType: "json", 
+            }).done(function(response){
+                var html = `
+                            <li>
+                                <div class="row me-4 p-1">
+                                    <div class="col-8" id="title-col">
+                                        ${response} ${title} 
+                                    </div>
+                                    <div class="col-4 btn-group">
+                                        <button class="btn" id="delete-button" name="deleteID" value=${response}>
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        <button class="btn" id="status-button" name="completedID" value=${response}>
+                                            <i class="far fa-check-circle"></i>
+                                        </button>
+                                    </div>
+                                    <hr>
+                                </div>
+                            </li>
+                            `;
+                $("ul").append(html);
+            });
+            $("#title-input").val('');
         });
-        $("#delete-button").click(function(){
-           $("delete-form").submit(); 
+        // list items are generated dynamically
+        $(document.body).on('click','#delete-button', function(e){
+            // this is used to get current object.
+            var id = $(this).val();
+            console.log(id);
+            // sent id to server to delete in database
+            $.post("main.go", {deleteID: id});
+            // delete in page
+            $(this).parent().parent().remove();
+
         });
+        var check;
+        $(document.body).on('click','#status-button', function(e){
+            // this is used to get current object.
+            var id = $(this).val();
+            console.log(id);
+            // sent id to server to delete in database
+            $.post("main.go", {completedID: id});
+            // delete in page
+            check = $(this).parent().parent().parent();
+            // this - button itself, 1st parent-btn group, 2nd parent-row
+            // html provides inner html, so we have to call once more parent
+            console.log(check);
+
+        });
+
     });
+
    </script>
 </body>
 </html>
