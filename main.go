@@ -41,13 +41,13 @@ type task struct{
 	ID int64
 	Status int 
 }
-func (p *task) Titles() string {
+func (p *task) TitleFunc() string {
 	return p.Title
 }
-func (p *task) Id() int64 {
+func (p *task) IdFunc() int64 {
 	return p.ID
 }
-func (p *task) status() int {
+func (p *task) StatusFunc() int {
 	return p.Status
 }
 var lastInsertedID int64
@@ -142,8 +142,10 @@ func index(response http.ResponseWriter, request *http.Request) {
 			_, err = stmt.Exec(1, id)
 			checkErr(err)
 			// Delete from the incompleteTasks
+			// when an existing item is completed then only completedID will post, title will be empty 
 			for index, item := range incompleteTasks{
 				if item.ID == id {
+					title = item.Title
 					incompleteTasks = append(incompleteTasks[:index], incompleteTasks[index+1:]...)
 					break
 				}
@@ -154,16 +156,37 @@ func index(response http.ResponseWriter, request *http.Request) {
 	}
 }
 
-
 func getCompletedTasks(w http.ResponseWriter, r *http.Request) {
 	// Convert list of data into json
 	b, err := json.Marshal(completedTasks)
 	checkErr(err)
 	fmt.Println("clicked")
 	fmt.Println(string(b))
-	w.Write(b)
 	// instead of above code we can also use
 	// json.NewEncoder(w).Encode(lastInsertedID)
+	w.Write(b)
+	/*
+    var html := `<li>
+                <div class="row me-4 p-1">
+                    <div class="col-8" id="title-col">
+                        ${task.ID} ${task.Title}
+                    </div>
+                    <div class="col-4 btn-group" >
+                        <button class="btn" id="delete-button" name="deleteID" value="${task.ID}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button class="btn" id="status-button" name="completedID" value="${task.ID}">
+                            <i class="far fa-check-circle"></i>
+                        </button>
+                        <button class="btn" id="delete-button" name="deleteID" value="${task.ID}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <hr>
+                </div>
+            	</li> `
+				*/
+
 }
 
 func main(){

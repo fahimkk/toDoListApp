@@ -16,14 +16,15 @@
            <h1>TO DO LIST</h1> 
        </div>
    </header> 
-   <div id="content-container" class="w-75 mx-auto">
+   <div class="w-75 mx-auto" style="padding-bottom: 50px; text-align: center;">
+   <div id="content-container">
     <div>
         <ul id="title-list">
             {{range .}}
             <li>
                 <div class="row me-4 p-1">
                     <div class="col-8" id="title-col">
-                        {{.ID}} {{ .Title }}
+                        {{.IdFunc}} {{ .TitleFunc }}
                     </div>
                     <div class="col-4 btn-group" >
                         <button class="btn" id="delete-button" name="deleteID" value="{{.ID}}">
@@ -44,16 +45,29 @@
     </div>
 
    
-
-
-
     <form method="POST" id="details-form">
         <label style="padding-right: 20px;">Title</label>
         <input placeholder="To Do Item" type="text" name="title" id="title-input">
         <input type="submit" id="addItem">
     </form>
+
    </div>
 
+   <button class="btn btn-success" id="show-item-button" style="margin-top: 20px;">
+        Show Completed Items
+   </button>
+
+    <button class="btn btn-secondary" id="hide-item-button" style="margin-top: 20px; display: none;">
+        Hide Completed Items
+   </button>
+
+   <div id="completed-items">
+        <ul id="completed-list">
+
+        </ul>
+   </div>
+
+   </div>
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="https://kit.fontawesome.com/e1342e9a0c.js" crossorigin="anonymous"></script>
 
@@ -88,7 +102,7 @@
                                 </div>
                             </li>
                             `;
-                $("ul").append(html);
+                $("ul#title-list").append(html);
             });
             $("#title-input").val('');
         });
@@ -99,23 +113,59 @@
             console.log(id);
             // sent id to server to delete in database
             $.post("main.go", {deleteID: id});
-            // delete in page
+            // delete from the page
             $(this).parent().parent().remove();
 
         });
-        var check;
         $(document.body).on('click','#status-button', function(e){
             // this is used to get current object.
             var id = $(this).val();
             console.log(id);
             // sent id to server to delete in database
             $.post("main.go", {completedID: id});
-            // delete in page
-            check = $(this).parent().parent().parent();
-            // this - button itself, 1st parent-btn group, 2nd parent-row
-            // html provides inner html, so we have to call once more parent
-            console.log(check);
+            // delete from the page
+            $(this).parent().parent().remove();
+            // Add completed section
+            // show button will fetch the data from the server
+            $("#show-item-button").click();
+        });
 
+        $("#show-item-button").click(function(){
+            $.get('/getCompletedTasks', function(response){
+                var tasks = JSON.parse(response)
+                $.each(tasks, function(index, task){
+                    var html = `
+            <li>
+                <div class="row me-4 p-1">
+                    <div class="col-8" id="title-col">
+                        ${task.ID} ${task.Title}
+                    </div>
+                    <div class="col-4 btn-group" >
+                        <button class="btn" id="delete-button" name="deleteID" value="${task.ID}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button class="btn" id="status-button" name="completedID" value="${task.ID}">
+                            <i class="far fa-check-circle"></i>
+                        </button>
+                        <button class="btn" id="delete-button" name="deleteID" value="${task.ID}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <hr>
+                </div>
+            </li>
+                `;
+                $("ul#completed-list").append(html);
+                $("#show-item-button").hide();
+                $("#hide-item-button").show();
+                });
+            });
+        });
+
+        $("#hide-item-button").click(function(){
+            $("ul#completed-list").children("li").remove();
+            $("#show-item-button").show();
+            $("#hide-item-button").hide();
         });
 
     });
