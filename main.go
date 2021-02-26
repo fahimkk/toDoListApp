@@ -94,6 +94,15 @@ func index(response http.ResponseWriter, request *http.Request) {
 			response.Write(b)
 			fmt.Println("ID: ",id,"-",title)
 		}
+		// Delete from Database
+			if deleteID != "" {
+			id, err = strconv.ParseInt(deleteID,10,64)
+			checkErr(err)
+			stmt, err := db.Prepare("DELETE from list WHERE id=?") 
+			checkErr(err) 
+			_, err = stmt.Exec(id)
+			checkErr(err)
+		}
 	}
 }
 
