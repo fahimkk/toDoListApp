@@ -4,172 +4,222 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
     <title>TO DO LIST</title>
 </head>
 
-<body id="bg">
+<body>
 
-   <header>
-       <div class="container-fluid" id="header">
-           <h1>TO DO LIST</h1> 
-       </div>
-   </header> 
-   <div class="w-75 mx-auto" style="padding-bottom: 50px; text-align: center;">
-   <div id="content-container">
-    <div>
-        <ul id="title-list">
+<!--main container-->
+<div class="mx-auto mt-5" id="main-container" style="border:black 1px solid; width: 500px; border-radius: 15px;">
+    <!--header container - and add items-->
+    <div id="header-container" style="width: auto; background-color: #558A77;border-top-left-radius: 15px; border-top-right-radius: 15px; padding-bottom: 10px;">
+        <div class="btn-group mb-3">
+        <!--Add button-->
+        <button class="btn" id="plus-button" style="position: relative; top: 10px; left: 380px;">
+            <i class="fas fa-plus-square" style="font-size: 30px; color: #0c3b3b;"></i>
+        </button>
+        <!--Clear button-->
+        <button class="btn" id="clear-button" style="position: relative; top: 10px; left: 380px;">
+            <i class="fas fa-sync-alt" style="font-size: 28px; color: #0c3b3b;"></i>
+        </button>
+            </div>
+        <!--Form container-->
+        <div class="mx-auto" id="form-container" style="width: 90%; background-color: rgb(135, 155, 116);; padding: 10px; border-radius: 10px; display: none;">
+            <form >
+                <input id="title-input" type="text" name="title" placeholder="Title - To Do List" style="width: 100%; margin-bottom: 10px; border-radius: 5px;">
+                <textarea name="description-input" placeholder="Description" id="description-input" style="resize:none; width: 100%; border-radius: 5px;"></textarea>
+                <input id="add-item" type="submit" style="color: white; background-color: #508052; position: relative; left: 350px;">
+            </form>
+        </div>
+    </div>
+
+    <!--To do list container-->
+    <div class="mx-auto" id="todo-container" style="">
+        <ul id="todo-list" style="list-style-type: none;">
+            <!--Adding item loop starts-->
             {{range .}}
             <li>
-                <div class="row me-4 p-1">
-                    <div class="col-8" id="title-col">
-                        {{.IdFunc}} {{ .TitleFunc }}
+                <!--Title and buttons Row-->
+                <div class="row me-3 my-2" style=" background-color: #DDE7E4; border-radius: 5px; padding-right: 30px;">
+                    <!--Title column-->
+                    <div class="col-9 my-auto" style="padding-top: 8px;">
+                        <h6> {{ .IdFunc }} {{ .Title }} </h6>
                     </div>
-                    <div class="col-4 btn-group" >
-                        <button class="btn" id="delete-button" name="deleteID" value="{{.ID}}">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        <button class="btn" id="status-button" name="completedID" value="{{.ID}}">
-                            <i class="far fa-check-circle"></i>
-                        </button>
-                        <button class="btn" id="delete-button" name="deleteID" value="{{.ID}}">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                    <!--Buttons column-->
+                    <div class="col-3 my-auto" style="">
+                        <div class="btn-group">
+                            <button class="btn" id="delete-button" name="deleteID" value="{{.IdFunc}}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button class="btn" id="status-button" name="completedID" value="{{.IdFunc}}">
+                                <i class="far fa-check-circle"></i>
+                            </button>
+                            <button class="btn" id="edit-button" name="deleteID" value="{{.IdFunc}}">
+                                <i class="far fa-edit"></i>
+                            </button>
+                        </div>
                     </div>
-                    <hr>
+                    <!--Edit-->
+                    <div class="py-2" id="edit-container" style="display: none;">
+                        <input id="tedit-input" type="text" placeholder="Title - To Do List" style="width: 100%; margin-bottom: 10px; border-radius: 5px;">
+                        <textarea name="" placeholder="Description" id="dedit-input" style="resize:none; width: 100%; border-radius: 5px;"></textarea>
+                        <div class="btn-group">
+                        <button class="btn" id="cancel-button" type="button" style="background-color: #dcdcdc; position: relative; left: 270px;">
+                            Cancel
+                        </button>
+                        <button class="btn" id="edit-save" value="{{.IdFunc}}" type="button" style="background-color: #508052; position: relative; left: 280px;">
+                            Save 
+                        </button>
+                        </div>
+                    </div>
                 </div>
             </li>
             {{end}}
+
         </ul>
     </div>
 
-   
-    <form method="POST" id="details-form">
-        <label style="padding-right: 20px;">Title</label>
-        <input placeholder="To Do Item" type="text" name="title" id="title-input">
-        <input type="submit" id="addItem">
-    </form>
+    <!--Show Hide button -->
+    <div class="text-center mb-4">
+        <button class="btn"  id="show-button" style="margin-top: 20px; background-color: #498168; color: white; border-radius: 5px;">
+            SHOW COMPLETED TO-DO'S
+        </button>
+        <button class="btn"  id="hide-button" style="margin-top: 20px; background-color: #498168; color: white; border-radius: 5px; display: none;">
+            HIDE COMPLETED TO-DO'S
+        </button>
+    </div> 
 
-   </div>
+    <!-- Completed list container -->
+    <div class="mx-auto" id="completed-container" style="display: none;">
+        <div class="row g-0 mx-2 my-2 px-3" style=" background-color: #DDE7E4; border-radius: 5px;">
+            <div class="col-9 my-auto" style="">
+                <h6> item one </h6>
+            </div>
+            <div class="col-3 my-auto" style="">
+                    <div class="btn-group">
+                        <button class="btn" id="delete-button" name="deleteID" value="">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button class="btn" id="undo-button" name="completedID" value="">
+                            <i class="fas fa-undo-alt"></i>
+                        </button>
+                        <button class="btn" id="info-button" name="deleteID" value="">
+                            <i class="fas fa-info"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> 
 
-   <button class="btn btn-success" id="show-item-button" style="margin-top: 20px;">
-        Show Completed Items
-   </button>
 
-    <button class="btn btn-secondary" id="hide-item-button" style="margin-top: 20px; display: none;">
-        Hide Completed Items
-   </button>
 
-   <div id="completed-items">
-        <ul id="completed-list">
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://kit.fontawesome.com/e1342e9a0c.js" crossorigin="anonymous"></script>
 
-        </ul>
-   </div>
-
-   </div>
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    <script src="https://kit.fontawesome.com/e1342e9a0c.js" crossorigin="anonymous"></script>
-
-   <script>
-    $(document).ready(function(){
-
-        $("#addItem").click(function(event){
-            event.preventDefault();
-            var title = $("#title-input").val()
-            console.log(title);
-            $.ajax({
-                type: "post",
-                url: "main.go",
-                data: {title: title},
-                dataType: "json", 
-            }).done(function(response){
-                var html = `
-                            <li>
-                                <div class="row me-4 p-1">
-                                    <div class="col-8" id="title-col">
-                                        ${response} ${title} 
-                                    </div>
-                                    <div class="col-4 btn-group">
-                                        <button class="btn" id="delete-button" name="deleteID" value=${response}>
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                        <button class="btn" id="status-button" name="completedID" value=${response}>
-                                            <i class="far fa-check-circle"></i>
-                                        </button>
-                                    </div>
-                                    <hr>
-                                </div>
-                            </li>
-                            `;
-                $("ul#title-list").append(html);
-            });
-            $("#title-input").val('');
-        });
-        // list items are generated dynamically
-        $(document.body).on('click','#delete-button', function(e){
-            // this is used to get current object.
-            var id = $(this).val();
-            console.log(id);
-            // sent id to server to delete in database
-            $.post("main.go", {deleteID: id});
-            // delete from the page
-            $(this).parent().parent().remove();
-
-        });
-        $(document.body).on('click','#status-button', function(e){
-            // this is used to get current object.
-            var id = $(this).val();
-            console.log(id);
-            // sent id to server to delete in database
-            $.post("main.go", {completedID: id});
-            // delete from the page
-            $(this).parent().parent().remove();
-            // Add completed section
-            // show button will fetch the data from the server
-            $("#show-item-button").click();
-        });
-
-        $("#show-item-button").click(function(){
-            $.get('/getCompletedTasks', function(response){
-                var tasks = JSON.parse(response)
-                $.each(tasks, function(index, task){
-                    var html = `
+<script>
+$(document).ready(function(){
+    var title = "";
+    var description = "";
+    var id = "";
+    var deletedID = "";
+    var completedID = "";
+    var undoID = "";
+    var editedTitle = "";
+    var editedDescription = "";
+    function createHtml(id, title){
+        return `
             <li>
-                <div class="row me-4 p-1">
-                    <div class="col-8" id="title-col">
-                        ${task.ID} ${task.Title}
+                <!--Title and buttons Row-->
+                <div class="row me-3 my-2" style=" background-color: #DDE7E4; border-radius: 5px; padding-right: 30px;">
+                    <!--Title column-->
+                    <div class="col-9 my-auto" style="padding-top: 8px;">
+                        <h6> ${id} ${title} </h6>
                     </div>
-                    <div class="col-4 btn-group" >
-                        <button class="btn" id="delete-button" name="deleteID" value="${task.ID}">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        <button class="btn" id="status-button" name="completedID" value="${task.ID}">
-                            <i class="far fa-check-circle"></i>
-                        </button>
-                        <button class="btn" id="delete-button" name="deleteID" value="${task.ID}">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                    <!--Buttons column-->
+                    <div class="col-3 my-auto" style="">
+                        <div class="btn-group">
+                            <button class="btn" id="delete-button" name="deleteID" value="${id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button class="btn" id="status-button" name="completedID" value=" ${id}">
+                                <i class="far fa-check-circle"></i>
+                            </button>
+                            <button class="btn" id="edit-button" name="deleteID" value=" ${id}">
+                                <i class="far fa-edit"></i>
+                            </button>
+                        </div>
                     </div>
-                    <hr>
+                    <!--Edit-->
+                    <div class="py-2" id="edit-container" style="display: none;">
+                        <input id="tedit-input" type="text" placeholder="Title - To Do List" style="width: 100%; margin-bottom: 10px; border-radius: 5px;">
+                        <textarea name="" placeholder="Description" id="dedit-input" style="resize:none; width: 100%; border-radius: 5px;"></textarea>
+                        <div class="btn-group">
+                        <button class="btn" id="cancel-button" type="button" style="background-color: #dcdcdc; position: relative; left: 270px;">
+                            Cancel
+                        </button>
+                        <button class="btn" id="edit-save" value="${id}" type="button" style="background-color: #508052; position: relative; left: 280px;">
+                            Save 
+                        </button>
+                        </div>
+                    </div>
                 </div>
             </li>
-                `;
-                $("ul#completed-list").append(html);
-                $("#show-item-button").hide();
-                $("#hide-item-button").show();
-                });
-            });
-        });
+    `;
+        }
 
-        $("#hide-item-button").click(function(){
-            $("ul#completed-list").children("li").remove();
-            $("#show-item-button").show();
-            $("#hide-item-button").hide();
-        });
-
+    $("#plus-button").click(function(){
+        $("#form-container").toggle();
     });
+    // add-item is the id of form.
+    $("#add-item").click(function(e){
+        e.preventDefault();
+        title = $("#title-input").val();
+        description = $("#description-input").val();
+        console.log(title);
+        console.log(description);
+        $.ajax({
+            type: "post",
+            url: "main.go",
+            data: {title: title, description:description},
+            dataType: "json",
+            // response of the post function will be id
+        }).done(function(id){
+            // input validation.
+           if  (title.length != 0) {
+               var html = createHtml(id, title)
+                $("#todo-list").prepend(html);
+                // clear input text box and description box
+                $("#title-input").val('');
+                $("#description-input").val('');
+                $("#form-container").hide();
+           }
+        });
+    });
+    $("#show-button").click(function(){
+        $("#completed-container").show();
+        $("#show-button").hide();
+        $("#hide-button").show();
+    });
+    $("#hide-button").click(function(){
+        $("#completed-container").hide();
+        $("#hide-button").hide();
+        $("#show-button").show();
+    });
+    $("#edit-button").click(function(){
+        $("#edit-container").toggle();
+    });
+    $("#edit-save").click(function(e){
+        e.preventDefault();
+        $("#edit-container").hide();
+    });
+     $("#cancel-button").click(function(e){
+        $("#edit-container").hide();
+    });
+});
+</script>
 
-   </script>
+
 </body>
-</html>
+</html
