@@ -44,26 +44,28 @@
                 <div class="row me-3 my-2" style=" background-color: #DDE7E4; border-radius: 5px; padding-right: 30px;">
                     <!--Title column-->
                     <div class="col-9 my-auto" style="padding-top: 8px;">
-                        <h6> {{ .IdFunc }} {{ .Title }} </h6>
+                        <h6> {{ .ID }} {{ .Title }} </h6>
                     </div>
                     <!--Buttons column-->
                     <div class="col-3 my-auto" style="">
                         <div class="btn-group">
-                            <button class="btn" id="delete-button" name="deleteID" value="{{.IdFunc}}">
+                            <button class="btn" id="delete-button" name="deleteID" value="{{.ID}}">
                                 <i class="fas fa-trash"></i>
                             </button>
-                            <button class="btn" id="status-button" name="completedID" value="{{.IdFunc}}">
+                            <button class="btn" id="status-button" name="completedID" value="{{.ID}}">
                                 <i class="far fa-check-circle"></i>
                             </button>
-                            <button class="btn" id="edit-button" name="deleteID" value="{{.IdFunc}}">
+                            <button class="btn" id="edit-button" name="deleteID" value="{{.ID}}">
                                 <i class="far fa-edit"></i>
                             </button>
                         </div>
                     </div>
                     <!--Edit-->
                     <div class="py-2" id="edit-container" style="display: none;">
-                        <input id="tedit-input" type="text" placeholder="Title - To Do List" style="width: 100%; margin-bottom: 10px; border-radius: 5px;">
-                        <textarea name="" placeholder="Description" id="dedit-input" style="resize:none; width: 100%; border-radius: 5px;"></textarea>
+                        <input id="tedit-input" type="text" placeholder="Title - To Do List" value="{{.Title}}" style="width: 100%; margin-bottom: 10px; border-radius: 5px;">
+                        <textarea name="" placeholder="Description" id="dedit-input" style="resize:none; width: 100%; border-radius: 5px;">
+                            {{.Description}}
+                        </textarea>
                         <div class="btn-group">
                         <button class="btn" id="cancel-button" type="button" style="background-color: #dcdcdc; position: relative; left: 270px;">
                             Cancel
@@ -169,10 +171,13 @@ $(document).ready(function(){
         // delete from the page
         $(this).parent().parent().parent().parent().remove();
     });
-
-    $("#edit-button").click(function(){
-        $("#edit-container").toggle();
+    $(document.body).on('click','#edit-button', function(){
+        // this is used to get current object.
+        var editBtnTag = $(this).parent().parent().next();
+        editBtnTag.toggle();
     });
+
+  
     $("#edit-save").click(function(e){
         e.preventDefault();
         $("#edit-container").hide();
