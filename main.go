@@ -37,8 +37,9 @@ func (p *task) ID() int64 {
 // completedTasks - data from the database in an slice form
 type task struct{
 	// To convert into json, we need to make all field exportable, ie Capital
-	Title string
 	ID int64
+	Title string
+	Description string
 	Status int 
 }
 func (p *task) TitleFunc() string {
@@ -49,6 +50,9 @@ func (p *task) IdFunc() int64 {
 }
 func (p *task) StatusFunc() int {
 	return p.Status
+}
+func (p *task) DescriptionFunc() string {
+	return p.Description
 }
 var lastInsertedID int64
 
@@ -69,21 +73,22 @@ func index(response http.ResponseWriter, request *http.Request) {
 	// templateStr := template.Must(template.New("anyname").Parse(templateSring))
 
 	// declaring for scaning from database
-	var title string
-	var status int 
 	var id int64
+	var title string
+	var description string
+	var status int 
 
 	rows, err := db.Query("SELECT * FROM list")
 	checkErr(err)
 	// only run when the tasks list is empty, tasks are global variables so refreshing the page do not empty the list
 	if len(completedTasks) == 0 && len(incompleteTasks) == 0 {
 		for rows.Next(){
-			err = rows.Scan(&id, &title, &status)
+			err = rows.Scan(&id, &title, &description, &status)
 			checkErr(err)
 			if status == 1 {
-				completedTasks = append(completedTasks, task{ID:id, Title: title, Status:status})
+				completedTasks = append(completedTasks, task{ID:id, Title: title, Description: description, Status:status})
 			} else{
-				incompleteTasks = append(incompleteTasks, task{ID:id, Title: title, Status:status})
+				incompleteTasks = append(incompleteTasks, task{ID:id, Title: title, Description: description, Status:status})
 			}
 		}
 	}
@@ -96,6 +101,7 @@ func index(response http.ResponseWriter, request *http.Request) {
 		request.ParseForm()
 		// If it insert
 		title = request.Form.Get("title")
+		description = request.Form.Get("description")
 		deleteID := request.Form.Get("deleteID")
 		completedID := request.Form.Get("completedID")
 		fmt.Println(completedID)
@@ -104,15 +110,17 @@ func index(response http.ResponseWriter, request *http.Request) {
 		// add title to db if not empty
 		if len(title) !=0 {
 			// INSERT/
-			stmt, err := db.Prepare("INSERT list SET title=?, status=?")
+			stmt, err := db.Prepare("INSERT list SET title=?, description=?, status=?")
 			checkErr(err)
-			res, _ := stmt.Exec(title, 0)
+			// Status is 0 for new item. ie incomplete
+			res, _ := stmt.Exec(title, description, 0)
 			id, _ := res.LastInsertId()
 			b, _ := json.Marshal(id)
 			response.Write(b)
-			fmt.Println("ID: ",id,"-",title)
+			fmt.Println("ID: ",id,"-",title,"-", description)
 			// Add new data to incompleteTasks slice 
-			incompleteTasks = append(incompleteTasks, task{ID:id, Title: title, Status: status})
+			incompleteTasks = append(incompleteTasks, task{ID:id, Title: title, 
+				Description: description, Status: status})
 	
 		}
 		// Delete from Database
@@ -140,9 +148,9 @@ func index(response http.ResponseWriter, request *http.Request) {
 						break
 				}
 			}
-		}
 	
 		}
+	}
 		// change status for completed tasks
 		// move form incompleteTasks to completedTasks 
 			if completedID != "" {

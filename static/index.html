@@ -168,7 +168,7 @@ $(document).ready(function(){
         $.post("main.go", {deleteID: id});
         // delete from the page
         $(this).parent().parent().parent().parent().remove();
-        });
+    });
 
     $("#edit-button").click(function(){
         $("#edit-container").toggle();
