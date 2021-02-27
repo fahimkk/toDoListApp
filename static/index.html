@@ -128,7 +128,72 @@ $(document).ready(function(){
     var undoID = "";
     var editedTitle = "";
     var editedDescription = "";
-    function createHtml(id, title){
+    
+
+    $("#plus-button").click(function(){
+        $("#form-container").toggle();
+    });
+    // add-item is the id of form.
+    $("#add-item").click(function(e){
+        e.preventDefault();
+        title = $("#title-input").val();
+        description = $("#description-input").val();
+        console.log(title);
+        console.log(description);
+        $.ajax({
+            type: "post",
+            url: "main.go",
+            data: {title: title, description:description},
+            dataType: "json",
+            // response of the post function will be id
+        }).done(function(id){
+            // input validation.
+           if  (title.length != 0) {
+               var html = createHtml(id, title)
+                $("#todo-list").prepend(html);
+                // clear input text box and description box
+                $("#title-input").val('');
+                $("#description-input").val('');
+                $("#form-container").hide();
+           }
+        });
+    });
+
+    // items in row are created dynamically, so all have same id may confuse to trigger the function. Use this method.
+    $(document.body).on('click','#delete-button', function(){
+        // this is used to get current object.
+        id = $(this).val();
+        console.log(id);
+        // sent id to server to delete in database
+        $.post("main.go", {deleteID: id});
+        // delete from the page
+        $(this).parent().parent().parent().parent().remove();
+        });
+
+    $("#edit-button").click(function(){
+        $("#edit-container").toggle();
+    });
+    $("#edit-save").click(function(e){
+        e.preventDefault();
+        $("#edit-container").hide();
+    });
+     $("#cancel-button").click(function(e){
+        $("#edit-container").hide();
+    });
+
+    $("#show-button").click(function(){
+        $("#completed-container").show();
+        $("#show-button").hide();
+        $("#hide-button").show();
+    });
+    $("#hide-button").click(function(){
+        $("#completed-container").hide();
+        $("#hide-button").hide();
+        $("#show-button").show();
+    });
+});
+
+function createHtml(id, title){
         return `
             <li>
                 <!--Title and buttons Row-->
@@ -168,56 +233,6 @@ $(document).ready(function(){
             </li>
     `;
         }
-
-    $("#plus-button").click(function(){
-        $("#form-container").toggle();
-    });
-    // add-item is the id of form.
-    $("#add-item").click(function(e){
-        e.preventDefault();
-        title = $("#title-input").val();
-        description = $("#description-input").val();
-        console.log(title);
-        console.log(description);
-        $.ajax({
-            type: "post",
-            url: "main.go",
-            data: {title: title, description:description},
-            dataType: "json",
-            // response of the post function will be id
-        }).done(function(id){
-            // input validation.
-           if  (title.length != 0) {
-               var html = createHtml(id, title)
-                $("#todo-list").prepend(html);
-                // clear input text box and description box
-                $("#title-input").val('');
-                $("#description-input").val('');
-                $("#form-container").hide();
-           }
-        });
-    });
-    $("#show-button").click(function(){
-        $("#completed-container").show();
-        $("#show-button").hide();
-        $("#hide-button").show();
-    });
-    $("#hide-button").click(function(){
-        $("#completed-container").hide();
-        $("#hide-button").hide();
-        $("#show-button").show();
-    });
-    $("#edit-button").click(function(){
-        $("#edit-container").toggle();
-    });
-    $("#edit-save").click(function(e){
-        e.preventDefault();
-        $("#edit-container").hide();
-    });
-     $("#cancel-button").click(function(e){
-        $("#edit-container").hide();
-    });
-});
 </script>
 
 
