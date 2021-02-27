@@ -123,13 +123,24 @@ func index(response http.ResponseWriter, request *http.Request) {
 			checkErr(err) 
 			_, err = stmt.Exec(id)
 			checkErr(err)
-			// Delete from the incomplete tasks
+			// To delete from the slices, 1st we have to find in which slice the item is present
+			itemfound := false
 			for index, item := range incompleteTasks{
 				if item.ID == id {
 					incompleteTasks = append(incompleteTasks[:index], incompleteTasks[index+1:]...)
+					itemfound = true
 					break
 				}
 			}
+			if ! itemfound {
+				for index, item := range completedTasks{
+					if item.ID == id {
+						completedTasks = append(completedTasks[:index], completedTasks[index+1:]...)
+						itemfound = false 
+						break
+				}
+			}
+		}
 	
 		}
 		// change status for completed tasks
