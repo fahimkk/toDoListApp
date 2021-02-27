@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/assets/css/bootstrap.min.css">
+    <title>TO DO LIST</title>
+</head>
+
+<body>
+    <!--main container-->
+    <div class="mx-auto mt-5" id="main-container" style="border:black 1px solid; width: 500px; height: auto; border-radius: 15px;">
+        <!--header container - and add items-->
+        <div id="header-container" style="height: auto; width: auto; background-color: teal;border-top-left-radius: 15px; border-top-right-radius: 15px;">
+            <div class="btn-group mb-3">
+            <!--Add button-->
+            <button class="btn" id="add-button" style="position: relative; top: 10px; left: 380px;">
+                <i class="fas fa-plus-square" style="font-size: 30px;"></i>
+            </button>
+            <!--Clear button-->
+            <button class="btn" id="clear-button" style="position: relative; top: 10px; left: 380px;">
+                <i class="fas fa-sync-alt" style="font-size: 28px;"></i>
+            </button>
+            </div>
+            <!--Form container-->
+            <div class="mx-auto" id="form-container" style="width: 90%; background-color: rgb(150, 146, 146);; padding: 10px;">
+                <form id="add-item">
+                    <input id="title-input" type="text" placeholder="Title - To Do List" style="width: 100%; margin-bottom: 10px; border-radius: 5px;">
+                    <textarea name="" placeholder="Description" id="description-input" style="resize:none; height: auto; width: 100%; border-radius: 5px;"></textarea>
+                    <input type="submit" style="background-color: #508052; position: relative; left: 350px;">
+                </form>
+            </div>
+        </div>
+    </div> 
+
+
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://kit.fontawesome.com/e1342e9a0c.js" crossorigin="anonymous"></script>
+
+<script>
+$(document).ready(function(){
+    $("#add-button").click(function(){
+        $("#form-container").toggle();
+    });
+});
+</script>
+
+
+</body>
+</html
