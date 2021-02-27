@@ -10,9 +10,9 @@
 
 <body>
     <!--main container-->
-    <div class="mx-auto mt-5" id="main-container" style="border:black 1px solid; width: 500px; height: auto; border-radius: 15px;">
+    <div class="mx-auto mt-5" id="main-container" style="border:black 1px solid; width: 500px; border-radius: 15px;">
         <!--header container - and add items-->
-        <div id="header-container" style="height: auto; width: auto; background-color: #558A77;border-top-left-radius: 15px; border-top-right-radius: 15px; padding-bottom: 10px;">
+        <div id="header-container" style="width: auto; background-color: #558A77;border-top-left-radius: 15px; border-top-right-radius: 15px; padding-bottom: 10px;">
             <div class="btn-group mb-3">
             <!--Add button-->
             <button class="btn" id="add-button" style="position: relative; top: 10px; left: 380px;">
@@ -27,9 +27,57 @@
             <div class="mx-auto" id="form-container" style="width: 90%; background-color: rgb(135, 155, 116);; padding: 10px; border-radius: 10px;">
                 <form id="add-item">
                     <input id="title-input" type="text" placeholder="Title - To Do List" style="width: 100%; margin-bottom: 10px; border-radius: 5px;">
-                    <textarea name="" placeholder="Description" id="description-input" style="resize:none; height: auto; width: 100%; border-radius: 5px;"></textarea>
+                    <textarea name="" placeholder="Description" id="description-input" style="resize:none; width: 100%; border-radius: 5px;"></textarea>
                     <input type="submit" style="background-color: #508052; position: relative; left: 350px;">
                 </form>
+            </div>
+        </div>
+        <div class="mx-auto" id="todo-container" style="">
+            <div class="row g-0 mx-2 my-2 px-3" style=" background-color: #DDE7E4; border-radius: 5px;">
+                <div class="col-9 my-auto" style="">
+                    <h6> item one </h5>
+                </div>
+                <div class="col-3 my-auto" style="">
+                    <div class="btn-group">
+                        <button class="btn" id="delete-button" name="deleteID" value="{{.ID}}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button class="btn" id="status-button" name="completedID" value="{{.ID}}">
+                            <i class="far fa-check-circle"></i>
+                        </button>
+                        <button class="btn" id="delete-button" name="deleteID" value="{{.ID}}">
+                            <i class="far fa-edit"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mb-4">
+            <button class="btn"  id="show-button" style="margin-top: 20px; background-color: #498168; color: white; border-radius: 5px;">
+                SHOW COMPLETED TO-DO'S
+            </button>
+            <button class="btn"  id="hide-button" style="margin-top: 20px; background-color: #498168; color: white; border-radius: 5px; display: none;">
+                HIDE COMPLETED TO-DO'S
+            </button>
+        </div> 
+        <div class="mx-auto" id="completed-container" style="">
+            <div class="row g-0 mx-2 my-2 px-3" style=" background-color: #DDE7E4; border-radius: 5px;">
+                <div class="col-9 my-auto" style="">
+                    <h6> item one </h5>
+                </div>
+                <div class="col-3 my-auto" style="">
+                    <div class="btn-group">
+                        <button class="btn" id="delete-button" name="deleteID" value="{{.ID}}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button class="btn" id="status-button" name="completedID" value="{{.ID}}">
+                            <i class="far fa-check-circle"></i>
+                        </button>
+                        <button class="btn" id="delete-button" name="deleteID" value="{{.ID}}">
+                            <i class="far fa-edit"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div> 
@@ -47,6 +95,17 @@ $(document).ready(function(){
     $("#add-item").click(function(e){
         e.preventDefault();
         $("#form-container").hide();
+    });
+    $("#show-button").click(function(){
+        $("#completed-container").show();
+        $("#show-button").hide();
+        $("#hide-button").show();
+    });
+    $("#hide-button").click(function(){
+        $("#completed-container").hide();
+        $("#hide-button").hide();
+        $("#show-button").show();
+
     });
 });
 </script>
