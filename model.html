@@ -24,11 +24,11 @@
             </button>
             </div>
             <!--Form container-->
-            <div class="mx-auto" id="form-container" style="width: 90%; background-color: rgb(135, 155, 116);; padding: 10px; border-radius: 10px;">
+            <div class="mx-auto" id="form-container" style="width: 90%; background-color: rgb(135, 155, 116);; padding: 10px; border-radius: 10px; display: none;">
                 <form id="add-item">
                     <input id="title-input" type="text" placeholder="Title - To Do List" style="width: 100%; margin-bottom: 10px; border-radius: 5px;">
                     <textarea name="" placeholder="Description" id="description-input" style="resize:none; width: 100%; border-radius: 5px;"></textarea>
-                    <input type="submit" style="background-color: #508052; position: relative; left: 350px;">
+                    <input type="submit" style="color: white; background-color: #508052; position: relative; left: 350px;">
                 </form>
             </div>
         </div>
@@ -45,10 +45,24 @@
                         <button class="btn" id="status-button" name="completedID" value="{{.ID}}">
                             <i class="far fa-check-circle"></i>
                         </button>
-                        <button class="btn" id="delete-button" name="deleteID" value="{{.ID}}">
+                        <button class="btn" id="edit-button" name="deleteID" value="{{.ID}}">
                             <i class="far fa-edit"></i>
                         </button>
                     </div>
+                </div>
+
+                <!--Edit-->
+                <div class="py-2" id="edit-container" style="display: none;">
+                <form id="add-item">
+                    <input id="title-input" type="text" placeholder="Title - To Do List" style="width: 100%; margin-bottom: 10px; border-radius: 5px;">
+                    <textarea name="" placeholder="Description" id="description-input" style="resize:none; width: 100%; border-radius: 5px;"></textarea>
+                    <div class="btn-group">
+                    <button id="cancel-button" type="button" style="background-color: #dcdcdc; position: relative; left: 300px;">
+                        Cancel
+                    </button>
+                    <input id="edit-submit" type="submit" style="color: white; background-color: #508052; position: relative; left: 310px;">
+                    </div>
+                </form>
                 </div>
             </div>
         </div>
@@ -60,7 +74,7 @@
                 HIDE COMPLETED TO-DO'S
             </button>
         </div> 
-        <div class="mx-auto" id="completed-container" style="">
+        <div class="mx-auto" id="completed-container" style="display: none;">
             <div class="row g-0 mx-2 my-2 px-3" style=" background-color: #DDE7E4; border-radius: 5px;">
                 <div class="col-9 my-auto" style="">
                     <h6> item one </h5>
@@ -70,11 +84,11 @@
                         <button class="btn" id="delete-button" name="deleteID" value="{{.ID}}">
                             <i class="fas fa-trash"></i>
                         </button>
-                        <button class="btn" id="status-button" name="completedID" value="{{.ID}}">
-                            <i class="far fa-check-circle"></i>
+                        <button class="btn" id="undo-button" name="completedID" value="{{.ID}}">
+                            <i class="fas fa-undo-alt"></i>
                         </button>
-                        <button class="btn" id="delete-button" name="deleteID" value="{{.ID}}">
-                            <i class="far fa-edit"></i>
+                        <button class="btn" id="info-button" name="deleteID" value="{{.ID}}">
+                            <i class="fas fa-info"></i>
                         </button>
                     </div>
                 </div>
@@ -89,6 +103,15 @@
 
 <script>
 $(document).ready(function(){
+    var title = "";
+    var description = "";
+    var id = "";
+    var deletedID = "";
+    var completedID = "";
+    var undoID = "";
+    var editedTitle = "";
+    var editedDescription = "";
+
     $("#add-button").click(function(){
         $("#form-container").toggle();
     });
@@ -105,7 +128,16 @@ $(document).ready(function(){
         $("#completed-container").hide();
         $("#hide-button").hide();
         $("#show-button").show();
-
+    });
+    $("#edit-button").click(function(){
+        $("#edit-container").toggle();
+    });
+    $("#edit-submit").click(function(e){
+        e.preventDefault();
+        $("#edit-container").hide();
+    });
+     $("#cancel-button").click(function(e){
+        $("#edit-container").hide();
     });
 });
 </script>
