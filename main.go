@@ -34,7 +34,6 @@ func (p *task) ID() int64 {
 }
 */
 
-// completedTasks - data from the database in an slice form
 type task struct{
 	// To convert into json, we need to make all field exportable, ie Capital
 	ID int64
@@ -54,11 +53,14 @@ func (p *task) StatusFunc() int {
 func (p *task) DescriptionFunc() string {
 	return p.Description
 }
+
+type tasks struct{
+	Completed []task
+	Incomplete []task
+}
 var lastInsertedID int64
 
 // Taking Existing data from database
-var completedTasks []task 
-var incompleteTasks []task 
 
 func index(response http.ResponseWriter, request *http.Request) {
 	// Connect to database
@@ -78,23 +80,23 @@ func index(response http.ResponseWriter, request *http.Request) {
 	var description string
 	var status int 
 
+	var toDo tasks
+
 	rows, err := db.Query("SELECT * FROM list")
 	checkErr(err)
 	// only run when the tasks list is empty, tasks are global variables so refreshing the page do not empty the list
-	if len(completedTasks) == 0 && len(incompleteTasks) == 0 {
-		for rows.Next(){
-			err = rows.Scan(&id, &title, &description, &status)
-			checkErr(err)
-			if status == 1 {
-				completedTasks = append(completedTasks, task{ID:id, Title: title, Description: description, Status:status})
-			} else{
-				incompleteTasks = append(incompleteTasks, task{ID:id, Title: title, Description: description, Status:status})
-			}
+	for rows.Next(){
+		err = rows.Scan(&id, &title, &description, &status)
+		checkErr(err)
+		if status == 1 {
+			toDo.Completed = append(toDo.Completed, task{ID:id, Title: title, Description: description, Status:status})
+		} else{
+			toDo.Incomplete = append(toDo.Incomplete, task{ID:id, Title: title, Description: description, Status:status})
 		}
 	}
 	if request.Method == "GET" {
 		// Pass existing data to the index page
-		err = indexTemplate.Execute(response, incompleteTasks)
+		err = indexTemplate.Execute(response, toDo)
 		checkErr(err)
 	} else {
 		// else it is POST method
@@ -119,7 +121,7 @@ func index(response http.ResponseWriter, request *http.Request) {
 			response.Write(b)
 			fmt.Println("ID: ",id,"-",title,"-", description)
 			// Add new data to incompleteTasks slice 
-			incompleteTasks = append(incompleteTasks, task{ID:id, Title: title, 
+			toDo.Incomplete = append(toDo.Incomplete, task{ID:id, Title: title, 
 				Description: description, Status: status})
 	
 		}
@@ -133,17 +135,17 @@ func index(response http.ResponseWriter, request *http.Request) {
 			checkErr(err)
 			// To delete from the slices, 1st we have to find in which slice the item is present
 			itemfound := false
-			for index, item := range incompleteTasks{
+			for index, item := range toDo.Incomplete{
 				if item.ID == id {
-					incompleteTasks = append(incompleteTasks[:index], incompleteTasks[index+1:]...)
+					toDo.Incomplete = append(toDo.Incomplete[:index], toDo.Incomplete[index+1:]...)
 					itemfound = true
 					break
 				}
 			}
 			if ! itemfound {
-				for index, item := range completedTasks{
+				for index, item := range toDo.Completed{
 					if item.ID == id {
-						completedTasks = append(completedTasks[:index], completedTasks[index+1:]...)
+						toDo.Completed = append(toDo.Completed[:index], toDo.Completed[index+1:]...)
 						itemfound = false 
 						break
 				}
@@ -151,8 +153,8 @@ func index(response http.ResponseWriter, request *http.Request) {
 	
 		}
 	}
-		// change status for completed tasks
-		// move form incompleteTasks to completedTasks 
+		// if status changed to completed, then
+		// move task form incompleteTasks to completedTasks 
 			if completedID != "" {
 			id, err = strconv.ParseInt(completedID,10,64)
 			checkErr(err)
@@ -162,22 +164,23 @@ func index(response http.ResponseWriter, request *http.Request) {
 			checkErr(err)
 			// Delete from the incompleteTasks
 			// when an existing item is completed then only completedID will post, title will be empty 
-			for index, item := range incompleteTasks{
+			for index, item := range toDo.Incomplete{
 				if item.ID == id {
 					title = item.Title
-					incompleteTasks = append(incompleteTasks[:index], incompleteTasks[index+1:]...)
+					toDo.Incomplete = append(toDo.Incomplete[:index], toDo.Incomplete[index+1:]...)
 					break
 				}
 			}
 			// Add to completedTasks
-			completedTasks = append(completedTasks, task{ID:id, Title: title, Status: status})
+			toDo.Completed = append(toDo.Completed, task{ID:id, Title: title, Status: status})
 		}
 	}
 }
 
+/*
 func getCompletedTasks(w http.ResponseWriter, r *http.Request) {
 	// Convert list of data into json
-	b, err := json.Marshal(completedTasks)
+	b, err := json.Marshal()
 	checkErr(err)
 	fmt.Println("clicked")
 	fmt.Println(string(b))
@@ -204,15 +207,15 @@ func getCompletedTasks(w http.ResponseWriter, r *http.Request) {
                     <hr>
                 </div>
             	</li> `
-				*/
 
 }
+				*/
 
 func main(){
 	http.Handle("/assets/", http.StripPrefix("/assets", http.FileServer(http.Dir("./static"))))
 
 	http.HandleFunc("/", index)
-	http.HandleFunc("/getCompletedTasks", getCompletedTasks)
+	// http.HandleFunc("/getCompletedTasks", getCompletedTasks)
 
 	err := http.ListenAndServe(":9000", nil)
 	checkErr(err)
