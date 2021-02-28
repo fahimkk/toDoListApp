@@ -117,7 +117,9 @@ func index(response http.ResponseWriter, request *http.Request) {
 			// Status is 0 for new item. ie incomplete
 			res, _ := stmt.Exec(title, description, 0)
 			id, _ := res.LastInsertId()
-			b, _ := json.Marshal(id)
+			idStr := strconv.FormatInt(id,10)
+			m := map[string]string{"id":idStr, "description": description}
+			b, _ := json.Marshal(m)
 			response.Write(b)
 			fmt.Println("ID: ",id,"-",title,"-", description)
 			// Add new data to incompleteTasks slice 

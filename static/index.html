@@ -67,12 +67,12 @@
                             {{.Description}}
                         </textarea>
                         <div class="btn-group">
-                        <button class="btn" id="cancel-button" type="button" style="background-color: #dcdcdc; position: relative; left: 270px;">
+                            <button class="btn" id="cancel-button" type="button" style="background-color: #dcdcdc; position: relative; left: 270px;">
                             Cancel
-                        </button>
-                        <button class="btn" id="edit-save" value="{{.IdFunc}}" type="button" style="background-color: #508052; position: relative; left: 280px;">
+                            </button>
+                            <button class="btn" id="edit-save" value="{{.IdFunc}}" type="button" style="background-color: #508052; position: relative; left: 280px;">
                             Save 
-                        </button>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -147,11 +147,13 @@ $(document).ready(function(){
             url: "main.go",
             data: {title: title, description:description},
             dataType: "json",
-            // response of the post function will be id
-        }).done(function(id){
+            // response of the post function will be id and description
+        }).done(function(response){
+            id = response.id
+            description = response.description
             // input validation.
            if  (title.length != 0) {
-               var html = createHtml(id, title)
+               var html = createHtml(id, title, description)
                 $("#todo-list").prepend(html);
                 // clear input text box and description box
                 $("#title-input").val('');
@@ -173,16 +175,25 @@ $(document).ready(function(){
     });
     $(document.body).on('click','#edit-button', function(){
         // this is used to get current object.
-        var editBtnTag = $(this).parent().parent().next();
-        editBtnTag.toggle();
+        var editContTag = $(this).parent().parent().next();
+        // store the title and description in corresponding variables to use to restore when cancel button clicked
+        title = $(this).parent().parent().next().children("input").val();
+        description = $(this).parent().parent().next().children("textarea").val();
+        editContTag.toggle();
     });
 
+    $(document.body).on('click','#cancel-button', function(){
+        // this is used to get current object.
+        var editContTag = $(this).parent().parent();
+        // Make title and description default, ie as before
+        // store the default value when edit-button clicked
+        $(this).parent().prev().prev().val(title); 
+        $(this).parent().prev().val(description);
+        editContTag.hide();
+    });
   
     $("#edit-save").click(function(e){
         e.preventDefault();
-        $("#edit-container").hide();
-    });
-     $("#cancel-button").click(function(e){
         $("#edit-container").hide();
     });
 
@@ -198,7 +209,7 @@ $(document).ready(function(){
     });
 });
 
-function createHtml(id, title){
+function createHtml(id, title, description){
         return `
             <li>
                 <!--Title and buttons Row-->
@@ -223,8 +234,10 @@ function createHtml(id, title){
                     </div>
                     <!--Edit-->
                     <div class="py-2" id="edit-container" style="display: none;">
-                        <input id="tedit-input" type="text" placeholder="Title - To Do List" style="width: 100%; margin-bottom: 10px; border-radius: 5px;">
-                        <textarea name="" placeholder="Description" id="dedit-input" style="resize:none; width: 100%; border-radius: 5px;"></textarea>
+                        <input id="tedit-input" type="text" placeholder="Title - To Do List" value="${title}" style="width: 100%; margin-bottom: 10px; border-radius: 5px;">
+                        <textarea name="" placeholder="Description" id="dedit-input" style="resize:none; width: 100%; border-radius: 5px;">
+                            ${description}
+                        </textarea>
                         <div class="btn-group">
                         <button class="btn" id="cancel-button" type="button" style="background-color: #dcdcdc; position: relative; left: 270px;">
                             Cancel
