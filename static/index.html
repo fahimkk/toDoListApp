@@ -67,10 +67,10 @@
                             {{.Description}}
                         </textarea>
                         <div class="btn-group">
-                            <button class="btn" id="cancel-button" type="button" style="background-color: #dcdcdc; position: relative; left: 270px;">
+                            <button class="btn" id="cancel-button" type="button" value="{{.ID}}" style="background-color: #dcdcdc; position: relative; left: 270px;">
                             Cancel
                             </button>
-                            <button class="btn" id="edit-save" value="{{.IdFunc}}" type="button" style="background-color: #508052; position: relative; left: 280px;">
+                            <button class="btn" id="save-button" value="{{.ID}}" type="button" style="background-color: #508052; position: relative; left: 280px;">
                             Save 
                             </button>
                         </div>
@@ -128,8 +128,8 @@ $(document).ready(function(){
     var deletedID = "";
     var completedID = "";
     var undoID = "";
-    var editedTitle = "";
-    var editedDescription = "";
+    var eTitle = "";
+    var eDescription = "";
     
 
     $("#plus-button").click(function(){
@@ -167,34 +167,45 @@ $(document).ready(function(){
     $(document.body).on('click','#delete-button', function(){
         // this is used to get current object.
         id = $(this).val();
-        console.log(id);
         // sent id to server to delete in database
         $.post("main.go", {deleteID: id});
         // delete from the page
         $(this).parent().parent().parent().parent().remove();
     });
     $(document.body).on('click','#edit-button', function(){
-        // this is used to get current object.
         var editContTag = $(this).parent().parent().next();
-        // store the title and description in corresponding variables to use to restore when cancel button clicked
-        title = $(this).parent().parent().next().children("input").val();
-        description = $(this).parent().parent().next().children("textarea").val();
+        // When edit button pressed there are three possibilities, simply toggling or cancel or save. for cancel and save we need the current data.So collect data when edit button pressed and stored in appropriate variables to use later for cancel and save button.
+        id = $(this).val();
+        $.post("main.go", {editID: id}).done(function(response){
+            response = JSON.parse(response);
+            title = response.title;
+            description = response.description;
+        });
         editContTag.toggle();
     });
 
     $(document.body).on('click','#cancel-button', function(){
-        // this is used to get current object.
         var editContTag = $(this).parent().parent();
-        // Make title and description default, ie as before
-        // store the default value when edit-button clicked
+        // we already collected title and description in edit-button pressed.
+        // Make title and description default, 
         $(this).parent().prev().prev().val(title); 
         $(this).parent().prev().val(description);
         editContTag.hide();
     });
-  
-    $("#edit-save").click(function(e){
-        e.preventDefault();
-        $("#edit-container").hide();
+    $(document.body).on('click','#save-button', function(){
+        var editContTag = $(this).parent().parent();
+        // Make title and description default, ie as before
+        // store the default value when edit-button clicked
+        // title, description and id are collected when edit-button clicked
+        eTitle = $(this).parent().prev().prev().val(); 
+        eDescription = $(this).parent().prev().val();
+        if (eTitle != title || eDescription != description){
+            // reassigning will be helpful for cancel button.
+            title = eTitle;
+            description = eDescription;
+            $.post("main.go", {uId:id, uTitle:title, uDescription: description});
+        } 
+        editContTag.hide();
     });
 
     $("#show-button").click(function(){
@@ -239,10 +250,10 @@ function createHtml(id, title, description){
                             ${description}
                         </textarea>
                         <div class="btn-group">
-                        <button class="btn" id="cancel-button" type="button" style="background-color: #dcdcdc; position: relative; left: 270px;">
+                        <button class="btn" id="cancel-button" type="button" value="${id}" style="background-color: #dcdcdc; position: relative; left: 270px;">
                             Cancel
                         </button>
-                        <button class="btn" id="edit-save" value="${id}" type="button" style="background-color: #508052; position: relative; left: 280px;">
+                        <button class="btn" id="save-button" value="${id}" type="button" style="background-color: #508052; position: relative; left: 280px;">
                             Save 
                         </button>
                         </div>
