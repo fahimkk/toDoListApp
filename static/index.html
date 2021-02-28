@@ -37,14 +37,14 @@
     <!--To do list container-->
     <div class="mx-auto" id="todo-container" style="">
         <ul id="todo-list" style="list-style-type: none;">
-            <!--Adding item loop starts-->
+            <!--Adding items, loop starts-->
             {{range .Incomplete}}
             <li>
                 <!--Title and buttons Row-->
                 <div class="row me-3 my-2" style=" background-color: #DDE7E4; border-radius: 5px; padding-right: 30px;">
                     <!--Title column-->
                     <div class="col-9 my-auto" style="padding-top: 8px;">
-                        <h6> {{ .ID }} {{ .Title }} </h6>
+                        <h6> {{ .Title }} </h6>
                     </div>
                     <!--Buttons column-->
                     <div class="col-3 my-auto" style="">
@@ -52,7 +52,7 @@
                             <button class="btn" id="delete-button" name="deleteID" value="{{.ID}}">
                                 <i class="fas fa-trash"></i>
                             </button>
-                            <button class="btn" id="status-button" name="completedID" value="{{.ID}}">
+                            <button class="btn" id="complete-button" name="completedID" value="{{.ID}}">
                                 <i class="far fa-check-circle"></i>
                             </button>
                             <button class="btn" id="edit-button" name="deleteID" value="{{.ID}}">
@@ -63,9 +63,8 @@
                     <!--Edit-->
                     <div class="py-2" id="edit-container" style="display: none;">
                         <input id="tedit-input" type="text" placeholder="Title - To Do List" value="{{.Title}}" style="width: 100%; margin-bottom: 10px; border-radius: 5px;">
-                        <textarea name="" placeholder="Description" id="dedit-input" style="resize:none; width: 100%; border-radius: 5px;">
-                            {{.Description}}
-                        </textarea>
+                        <!--Text area show extra white spaces inside the box if there is a space btw the tags.-->
+                        <textarea name="" placeholder="Description" id="dedit-input" style="resize:none; width: 100%; border-radius: 5px;">{{.Description}}</textarea>
                         <div class="btn-group">
                             <button class="btn" id="cancel-button" type="button" value="{{.ID}}" style="background-color: #dcdcdc; position: relative; left: 270px;">
                             Cancel
@@ -94,26 +93,47 @@
 
     <!-- Completed list container -->
     <div class="mx-auto" id="completed-container" style="display: none;">
-        <div class="row g-0 mx-2 my-2 px-3" style=" background-color: #DDE7E4; border-radius: 5px;">
-            <div class="col-9 my-auto" style="">
-                <h6> item one </h6>
-            </div>
-            <div class="col-3 my-auto" style="">
-                    <div class="btn-group">
-                        <button class="btn" id="delete-button" name="deleteID" value="">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        <button class="btn" id="undo-button" name="completedID" value="">
-                            <i class="fas fa-undo-alt"></i>
-                        </button>
-                        <button class="btn" id="info-button" name="deleteID" value="">
-                            <i class="fas fa-info"></i>
+        <ul id="completed-list" style="list-style-type: none;">
+            <!--Adding items, loop starts-->
+            {{range .Completed}}
+            <li>
+                <div class="row me-3 my-2" style=" background-color: #8bbea8; border-radius: 5px; padding-right: 30px;">
+                    <!--Title column-->
+                    <div class="col-9 my-auto" style="padding-top: 8px;">
+                        <h6> {{.Title}} </h6>
+                    </div>
+                    <!--Button column-->
+                    <div class="col-3 my-auto" style="">
+                        <div class="btn-group">
+                            <button class="btn" id="delete-button" name="deleteID" value="{{.ID}}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button class="btn" id="undo-button" name="completedID" value="{{.ID}}">
+                                <i class="fas fa-undo-alt"></i>
+                            </button>
+                            <button class="btn" id="info-button" name="deleteID" value="{{.ID}}">
+                                <i class="fas fa-info"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!--Info-->
+                    <div class="py-2" id="info-container" style="display: none;">
+                        <p>
+                            {{.Description}}
+                        </p>
+                        <button class="btn" id="close-button" type="button" value="{{.ID}}" style="background-color: #dcdcdc; position: relative; left: 370px;">
+                            Close
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div> 
+            </li>
+            {{end}}
+
+        </ul>
+    </div>
+
+
+</div> 
 
 
 
@@ -153,7 +173,7 @@ $(document).ready(function(){
             description = response.description
             // input validation.
            if  (title.length != 0) {
-               var html = createHtml(id, title, description)
+               var html = createHtml(id, title, description, "edit");
                 $("#todo-list").prepend(html);
                 // clear input text box and description box
                 $("#title-input").val('');
@@ -172,39 +192,56 @@ $(document).ready(function(){
         // delete from the page
         $(this).parent().parent().parent().parent().remove();
     });
-    $(document.body).on('click','#edit-button', function(){
-        var editContTag = $(this).parent().parent().next();
-        // When edit button pressed there are three possibilities, simply toggling or cancel or save. for cancel and save we need the current data.So collect data when edit button pressed and stored in appropriate variables to use later for cancel and save button.
+
+    $(document.body).on('click','#complete-button', function(){
+        // this is used to get current object.
         id = $(this).val();
-        $.post("main.go", {editID: id}).done(function(response){
+        var completedTag = $(this).parent().parent().parent().parent();
+        // sent id to server to delete in database
+        $.post("main.go", {completedID: id}).done(function(response){
+            console.log(id);
+            console.log(response);
             response = JSON.parse(response);
             title = response.title;
             description = response.description;
+            // delete from the page
+            completedTag.remove();
+            // Add completed section
+            var html = createHtml(id, title, description, "info");
+            $("#completed-list").prepend(html);
+            $("#show-button").click();
         });
-        editContTag.toggle();
+    });
+
+    $(document.body).on('click','#edit-button', function(){
+       var editContTag = $(this).parent().parent().next();
+       editContTag.toggle();
     });
 
     $(document.body).on('click','#cancel-button', function(){
         var editContTag = $(this).parent().parent();
-        // we already collected title and description in edit-button pressed.
-        // Make title and description default, 
-        $(this).parent().prev().prev().val(title); 
-        $(this).parent().prev().val(description);
-        editContTag.hide();
+        // create the tags, we can not use this method inside the post.
+        // fetch the data from database and place there
+        var tTag = $(this).parent().prev().prev(); 
+        var dTag = $(this).parent().prev();
+        id = $(this).val();
+        $.post("main.go", {cancelID: id}).done(function(response){
+            response = JSON.parse(response)
+            tTag.val(response.title);
+            dTag.val(response.description);
+            editContTag.hide();
+        });
     });
+
     $(document.body).on('click','#save-button', function(){
         var editContTag = $(this).parent().parent();
         // Make title and description default, ie as before
         // store the default value when edit-button clicked
         // title, description and id are collected when edit-button clicked
-        eTitle = $(this).parent().prev().prev().val(); 
-        eDescription = $(this).parent().prev().val();
-        if (eTitle != title || eDescription != description){
-            // reassigning will be helpful for cancel button.
-            title = eTitle;
-            description = eDescription;
-            $.post("main.go", {uId:id, uTitle:title, uDescription: description});
-        } 
+        title = $(this).parent().prev().prev().val(); 
+        description = $(this).parent().prev().val();
+        // validation will be in server side
+        $.post("main.go", {uId:id, uTitle:title, uDescription: description});
         editContTag.hide();
     });
 
@@ -218,16 +255,53 @@ $(document).ready(function(){
         $("#hide-button").hide();
         $("#show-button").show();
     });
+    $(document.body).on("click","#info-button", function(){
+        $(this).parent().parent().next().toggle();
+    });
+    $(document.body).on("click","#close-button", function(){
+        $(this).parent().hide();
+    });
+
+    $(document.body).on('click','#undo-button', function(){
+        // this is used to get current object.
+        id = $(this).val();
+        var completedTag = $(this).parent().parent().parent().parent();
+        // sent id to server to delete in database
+        $.post("main.go", {undoID: id}).done(function(response){
+            response = JSON.parse(response);
+            title = response.title;
+            description = response.description;
+            // delete from the page
+            completedTag.remove();
+            // Add completed section
+            var editHtml = createEditHtml(title, description);
+            var html = createHtml(id, title, description, editHtml);
+            $("#todo-list").prepend(html);
+        });
+    });
+
 });
 
-function createHtml(id, title, description){
+function createHtml(id, title, description, type){
+    if (type == "edit") {
+        var btn2 = "far fa-check-circle"; 
+        var btn3 = "far fa-edit"; 
+        var html = createEditHtml(id, title,description);
+        var color = "#DDE7E4";
+    } else {
+        var btn2 = "fas fa-undo-alt"; 
+        var btn3 = "fas fa-info"; 
+        var html = createInfoHtml(id,description);
+        var color = "#8bbea8";
+    }
+
         return `
             <li>
                 <!--Title and buttons Row-->
-                <div class="row me-3 my-2" style=" background-color: #DDE7E4; border-radius: 5px; padding-right: 30px;">
+                <div class="row me-3 my-2" style=" background-color: ${color}; border-radius: 5px; padding-right: 30px;">
                     <!--Title column-->
                     <div class="col-9 my-auto" style="padding-top: 8px;">
-                        <h6> ${id} ${title} </h6>
+                        <h6> ${title} </h6>
                     </div>
                     <!--Buttons column-->
                     <div class="col-3 my-auto" style="">
@@ -235,33 +309,51 @@ function createHtml(id, title, description){
                             <button class="btn" id="delete-button" name="deleteID" value="${id}">
                                 <i class="fas fa-trash"></i>
                             </button>
-                            <button class="btn" id="status-button" name="completedID" value=" ${id}">
-                                <i class="far fa-check-circle"></i>
+                            <button class="btn" id="complete-button" name="completedID" value=" ${id}">
+                                <i class="${btn2}"></i>
                             </button>
                             <button class="btn" id="edit-button" name="deleteID" value=" ${id}">
-                                <i class="far fa-edit"></i>
+                                <i class="${btn3}"></i>
                             </button>
                         </div>
                     </div>
-                    <!--Edit-->
-                    <div class="py-2" id="edit-container" style="display: none;">
-                        <input id="tedit-input" type="text" placeholder="Title - To Do List" value="${title}" style="width: 100%; margin-bottom: 10px; border-radius: 5px;">
-                        <textarea name="" placeholder="Description" id="dedit-input" style="resize:none; width: 100%; border-radius: 5px;">
-                            ${description}
-                        </textarea>
-                        <div class="btn-group">
-                        <button class="btn" id="cancel-button" type="button" value="${id}" style="background-color: #dcdcdc; position: relative; left: 270px;">
-                            Cancel
-                        </button>
-                        <button class="btn" id="save-button" value="${id}" type="button" style="background-color: #508052; position: relative; left: 280px;">
-                            Save 
-                        </button>
-                        </div>
-                    </div>
+                    
+                    ${html}
+
                 </div>
             </li>
     `;
         }
+
+function createEditHtml(id, title, description){
+    // row bg color and edit/info icon changes w.r.t type
+    return `
+        <div class="py-2" id="edit-container" style="display: none;">
+            <input id="tedit-input" type="text" placeholder="Title - To Do List" value="${title}" style="width: 100%; margin-bottom: 10px; border-radius: 5px;">
+            <textarea name="" placeholder="Description" id="dedit-input" style="resize:none; width: 100%; border-radius: 5px;">${description}</textarea>
+            <div class="btn-group">
+                <button class="btn" id="cancel-button" type="button" value="${id}" style="background-color: #dcdcdc; position: relative; left: 270px;">
+                    Cancel
+                </button>
+                <button class="btn" id="save-button" value="${id}" type="button" style="background-color: #508052; position: relative; left: 280px;">
+                    Save 
+                </button>
+            </div>
+        </div>
+    `;
+}
+function createInfoHtml(id, description){
+    return `
+        <div class="py-2" id="info-container" style="display: none;">
+            <p>
+                ${description}
+            </p>
+            <button class="btn" id="close-button" type="button" value="${id}" style="background-color: #dcdcdc; position: relative; left: 370px;">
+                Close
+            </button>
+        </div>
+    `;
+}
 </script>
 
 

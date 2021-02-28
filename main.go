@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	//"go/printer"
 	"strconv"
 	"text/template"
@@ -100,15 +102,18 @@ func index(response http.ResponseWriter, request *http.Request) {
 		checkErr(err)
 	} else {
 		// else it is POST method
+		// different buttons pass different parameters. so action takes place based on the parameters passed.
 		request.ParseForm()
-		title = request.Form.Get("title")
-		description = request.Form.Get("description")
-		deleteID := request.Form.Get("deleteID")
-		completedID := request.Form.Get("completedID")
-		editID := request.Form.Get("editID")
-		uId := request.Form.Get("uId")
-		uTitle := request.Form.Get("uTitle")
-		uDescription := request.Form.Get("uDescription")
+		title = strings.TrimSpace(request.Form.Get("title"))
+		description = strings.TrimSpace(request.Form.Get("description"))
+		deleteID := strings.TrimSpace(request.Form.Get("deleteID"))
+		completedID := strings.TrimSpace(request.Form.Get("completedID"))
+		cancelID := strings.TrimSpace(request.Form.Get("cancelID"))
+		uId := strings.TrimSpace(request.Form.Get("uId"))
+		uTitle := strings.TrimSpace(request.Form.Get("uTitle"))
+		uDescription := strings.TrimSpace(request.Form.Get("uDescription"))
+		undoID := strings.TrimSpace(request.Form.Get("undoID"))
+
 
 		fmt.Println(completedID)
 		fmt.Println("d.ID: ",deleteID)
@@ -164,6 +169,8 @@ func index(response http.ResponseWriter, request *http.Request) {
 		// if status changed to completed, then
 		// move task form incompleteTasks to completedTasks 
 		if completedID != "" {
+			fmt.Println(completedID)
+			fmt.Printf("%T", completedID)
 			id, err = strconv.ParseInt(completedID,10,64)
 			checkErr(err)
 			stmt, err := db.Prepare("UPDATE list SET status=? WHERE id=?")
@@ -175,15 +182,19 @@ func index(response http.ResponseWriter, request *http.Request) {
 			for index, item := range toDo.Incomplete{
 				if item.ID == id {
 					title = item.Title
+					description = item.Description
 					toDo.Incomplete = append(toDo.Incomplete[:index], toDo.Incomplete[index+1:]...)
+					m := map[string]string{"title":title, "description": description}
+					b, _ := json.Marshal(m)
+					response.Write(b)
 					break
 				}
 			}
 			// Add to completedTasks
 			toDo.Completed = append(toDo.Completed, task{ID:id, Title: title, Status: status})
 		}
-		if editID != ""{
-			id, err = strconv.ParseInt(editID,10,64)
+		if cancelID != ""{
+			id, err = strconv.ParseInt(cancelID,10,64)
 			checkErr(err)
 			// Cancel button is only for incomplete tasks. search for id and return a map of title and description.
 			for _, item := range toDo.Incomplete{
@@ -202,18 +213,43 @@ func index(response http.ResponseWriter, request *http.Request) {
 		if uId !="" {
 			id, err = strconv.ParseInt(uId,10,64)
 			checkErr(err)
-			stmt, err := db.Prepare("UPDATE list SET title=?, description=? WHERE id=?")
-			checkErr(err) 
-			_, err = stmt.Exec(uTitle, uDescription, id)
-			checkErr(err)
-			// Update from the incompleteTasks
-			// when an existing item is completed then only completedID will post, title will be empty 
+			// Update in incompleteTasks
 			for _, item := range toDo.Incomplete{
 				if item.ID == id {
-					item.Title = uTitle
-					item.Description = uDescription
+					if item.Title != uTitle || item.Description != uDescription {
+						item.Title = uTitle
+						item.Description = uDescription
+						stmt, err := db.Prepare("UPDATE list SET title=?, description=? WHERE id=?")
+						checkErr(err) 
+						_, err = stmt.Exec(uTitle, uDescription, id)
+						checkErr(err)
+						break
+					}
+				}
+			}
+		}
+
+		// Undo - move from completed to incomplete and change status to 0.
+		if undoID != "" {
+			id, err = strconv.ParseInt(undoID,10,64)
+			checkErr(err)
+			for index, item := range toDo.Completed{
+				if item.ID == id {
+					title = item.Title
+					description = item.Description
+					stmt, err := db.Prepare("UPDATE list SET status=? WHERE id=?")
+					checkErr(err) 
+					_, err = stmt.Exec(0, id)
+					checkErr(err)
+					// Delete from completed tasks
+					toDo.Completed = append(toDo.Completed[:index], toDo.Completed[index+1:]...)
+					m := map[string]string{"title":title, "description": description}
+					b, _ := json.Marshal(m)
+					response.Write(b)
 					break
 				}
+			// Add to incomplete tasks
+			toDo.Incomplete = append(toDo.Incomplete, task{ID:id, Title: title, Status: status})
 			}
 		}
 	}
